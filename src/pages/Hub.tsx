@@ -132,7 +132,7 @@ export default function Hub() {
                 Thus Spoke the GPU
               </div>
               <div className="text-sm mt-0.5 font-mono" style={{ color: 'var(--muted)' }}>
-                Run the real Nietzsche GPT you just built
+                See the architecture you assembled come alive
               </div>
             </div>
             <div className="shrink-0 text-xs tracking-widest" style={{ color: allLevelsComplete ? '#06d6a0' : 'var(--faint)' }}>

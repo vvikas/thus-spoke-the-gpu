@@ -163,15 +163,41 @@ scripts/
 
 ---
 
-## Contributing
+## The Bigger Vision
 
-Ideas for more levels:
-- Multi-head attention (combine N attention heads)
-- Positional encoding (sine/cosine waves)
-- Cross-entropy loss
-- Byte-pair encoding tokenizer
+The current 9 levels teach the *concepts* behind a transformer. But the real Nandgame endgame is deeper: **the chip graph you wire should be functionally equivalent to `gpt.py`**. Every matrix multiply, every residual connection, every softmax — constructible from the primitives in the palette, producing the exact same numbers as the Python model.
 
-Open an issue or PR — the architecture is designed for extension.
+We're not there yet. Here's the roadmap:
+
+### Phase 2 — Full GPT Forward Pass in Chips
+These levels would close the gap between "conceptual demo" and "actual computation":
+
+| # | Level | Chip | What it unlocks |
+|---|-------|------|-----------------|
+| 10 | **Multi-Head Attention** | `multi_head_attn` | Combine N attention heads → concat → linear |
+| 11 | **Token Embedding** | `token_embed` | Integer index → embedding vector (lookup table) |
+| 12 | **Positional Encoding** | `pos_encoding` | sin/cos waves added to embeddings |
+| 13 | **Cross-Entropy Loss** | `cross_entropy` | −log(p_correct) — required for training |
+| 14 | **Full GPT Block** | `gpt_block` | embedding + N×transformer_block + lm_head |
+
+### Phase 3 — Run Your Wired Circuit on Real Weights
+Once the chip graph covers the full forward pass:
+- Export weights from a trained nanoGPT checkpoint as JSON
+- Feed them into the chip graph — same weights, same architecture
+- The canvas *is* the model. The output matches gpt.py token for token.
+
+This is the moment the game becomes real: not "you learned how it works" but "you built the thing that works."
+
+### Contributing
+
+If you want to help move toward this vision, the best entry points are:
+
+- **Add a level**: ~40 lines in `src/data/levelDefs.ts` + chip in `src/engine/chipDefs.ts`
+- **Add a primitive**: one entry in `src/engine/blockDefs.ts` (e.g. `matmul`, `concat`, `log`)
+- **Fix a chip**: improve test coverage or edge cases in existing chip `compute` functions
+- **Improve the canvas**: better node layout, edge routing, zoom-to-fit on load
+
+Open an issue or PR. The architecture is designed for extension — each level is independent, chips compose naturally, and the engine is pure TypeScript.
 
 ---
 

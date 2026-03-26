@@ -64,7 +64,7 @@ export default function FinalUnlock() {
     setTimeout(() => setExpression('speaking'), 600);
   };
 
-  const shareText = `I just built a transformer from scratch through 9 levels. A pixel-art Nietzsche told me:\n\n"${SHARE_QUOTE}"\n\nThus Spoke the GPU 🧠`;
+  const shareText = `I just assembled a transformer architecture from scratch — 9 levels of chips, from dot product to transformer block. A pixel-art Nietzsche told me:\n\n"${SHARE_QUOTE}"\n\nThus Spoke the GPU 🧠`;
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] font-mono overflow-hidden relative">

@@ -163,7 +163,7 @@ export default function GPTPlayground({ onBack }: { onBack: () => void }) {
         <div>
           <h1 className="text-3xl font-bold mb-2" style={{ color: 'var(--text)' }}>Thus Spoke the GPU</h1>
           <p className="text-sm leading-6" style={{ color: 'var(--muted)' }}>
-            You built the transformer. Now run it.<br />
+            You assembled the architecture. Now watch it speak.<br />
             Type a prompt and let Nietzsche continue it.
           </p>
         </div>

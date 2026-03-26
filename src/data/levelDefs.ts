@@ -206,7 +206,7 @@ export const LEVEL_DEFS: LevelDef[] = [
   def __init__(self, n_embd):
       self.net = nn.Sequential(
           nn.Linear(n_embd, 4 * n_embd),
-          nn.ReLU(),    # ← this is what you just built
+          nn.ReLU(),    # ← this is the chip you assembled in Level 6
           nn.Linear(4 * n_embd, n_embd),
       )`,
     availablePrimitives: ['max_vec'],
