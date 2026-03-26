@@ -4,7 +4,7 @@
 
 A Nandgame-style interactive learning experience where you build a GPT transformer from scratch — one chip at a time.
 
-![Thus Spoke the GPU](./src/assets/hero.png)
+![Thus Spoke the GPU](public/screenshots/preview.png)
 
 ---
 
