@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useThemeStore } from '../store/themeStore';
 import ThemeToggle from '../components/ThemeToggle';
+import { LEVEL_DEFS } from '../data/levelDefs';
 
 const TITLE = 'THUS SPOKE THE GPU';
 const SUBTITLE = 'The GPU has spoken. Can you understand it?';
@@ -161,7 +162,7 @@ export default function Landing() {
         className="relative z-10 text-center text-xs font-mono pb-6 tracking-widest"
         style={{ color: 'var(--text)' }}
       >
-        8 LEVELS · 1 PHILOSOPHER · 0 SANITY
+        {LEVEL_DEFS.length} LEVELS · 1 PHILOSOPHER · 0 SANITY
       </motion.p>
     </div>
   );
