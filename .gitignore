@@ -23,3 +23,5 @@ dist-ssr
 *.sln
 *.sw?
 DONT_UPLOAD_TO_GIT.txt
+
+.claude/
