@@ -1,0 +1,125 @@
+@import "tailwindcss";
+
+* {
+  box-sizing: border-box;
+}
+
+/* ── Theme variables ─────────────────────────────────────────────────────── */
+:root,
+[data-theme="dark"] {
+  --bg:        #080808;
+  --bg2:       #0a0a0a;
+  --surface:   #0d0d0d;
+  --surface2:  #111111;
+  --surface3:  #060606;
+  --border:    #1a1a1a;
+  --border2:   #2a2a2a;
+  --border3:   #1e1e1e;
+  --text:      #ffffff;
+  --text2:     #e5e7eb;
+  --muted:     #6b7280;
+  --dim:       #4b5563;
+  --faint:     #374151;
+  --scrollbar-track: #111;
+  --gpt-code:  #f5c518;
+}
+
+[data-theme="light"] {
+  --bg:        #f4f3ee;
+  --bg2:       #f0efe9;
+  --surface:   #ffffff;
+  --surface2:  #f8f7f2;
+  --surface3:  #eceae3;
+  --border:    #e0dfd8;
+  --border2:   #cccabf;
+  --border3:   #dddcd5;
+  --text:      #111111;
+  --text2:     #1f2937;
+  --muted:     #6b7280;
+  --dim:       #9ca3af;
+  --faint:     #d1d5db;
+  --scrollbar-track: #e0dfd8;
+  --gpt-code:  #92400e;
+}
+
+body {
+  background-color: var(--bg2);
+  color: var(--text);
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 16px;
+  line-height: 1.6;
+  margin: 0;
+  overflow-x: hidden;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+::-webkit-scrollbar-thumb { background: #f5c518; border-radius: 3px; }
+
+/* ── Glow utilities ──────────────────────────────────────────────────────── */
+.glow-gold {
+  box-shadow: 0 0 20px rgba(245, 197, 24, 0.4), 0 0 40px rgba(245, 197, 24, 0.1);
+}
+.glow-gold-text {
+  text-shadow: 0 0 20px rgba(245, 197, 24, 0.6);
+}
+.glow-red {
+  box-shadow: 0 0 20px rgba(230, 57, 70, 0.5);
+}
+.glow-green {
+  box-shadow: 0 0 20px rgba(45, 198, 83, 0.4);
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 10px rgba(245, 197, 24, 0.3); }
+  50% { box-shadow: 0 0 30px rgba(245, 197, 24, 0.8), 0 0 60px rgba(245, 197, 24, 0.3); }
+}
+.pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  92% { opacity: 1; }
+  93% { opacity: 0.8; }
+  94% { opacity: 1; }
+  96% { opacity: 0.6; }
+  97% { opacity: 1; }
+}
+.flicker { animation: flicker 4s ease-in-out infinite; }
+
+/* ── React Flow controls — always visible on the dark canvas ─────────────── */
+.react-flow__controls {
+  background: #1a1a1a !important;
+  border: 1px solid #333 !important;
+  border-radius: 6px !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5) !important;
+}
+.react-flow__controls-button {
+  background: #1a1a1a !important;
+  border-bottom: 1px solid #2a2a2a !important;
+  color: #cccccc !important;
+  fill: #cccccc !important;
+}
+.react-flow__controls-button:hover {
+  background: #2a2a2a !important;
+  color: #f5c518 !important;
+  fill: #f5c518 !important;
+}
+.react-flow__controls-button svg {
+  fill: currentColor !important;
+}
+
+/* ── Theme-aware text helpers ────────────────────────────────────────────── */
+.t-text    { color: var(--text); }
+.t-text2   { color: var(--text2); }
+.t-muted   { color: var(--muted); }
+.t-dim     { color: var(--dim); }
+.t-faint   { color: var(--faint); }
+.t-bg      { background-color: var(--bg); }
+.t-surface { background-color: var(--surface); }
+.t-surface2{ background-color: var(--surface2); }
+.t-border  { border-color: var(--border); }
+.t-border2 { border-color: var(--border2); }
