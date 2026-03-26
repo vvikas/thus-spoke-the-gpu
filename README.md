@@ -32,7 +32,7 @@ Inspired by [Nandgame](https://nandgame.com/), this is a browser-based puzzle ga
 ### What Awaits in the Final Level
 After building the architecture, you get to have deeply philosophical (and sometimes highly quirky!) conversations with the custom character-level Nietzsche GPT.
 
-![Quirky Nietzsche Generation](public/screenshots/thus_spoke.png)
+<img src="public/screenshots/thus_spoke.png" alt="Quirky Nietzsche Generation" width="500" />
 
 ---
 
