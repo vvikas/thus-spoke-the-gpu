@@ -10,6 +10,7 @@ function applyTheme(theme: Theme) {
 interface ThemeState {
   theme: Theme;
   toggleTheme: () => void;
+  setTheme: (t: Theme) => void;
 }
 
 export const useThemeStore = create<ThemeState>()(
@@ -20,6 +21,10 @@ export const useThemeStore = create<ThemeState>()(
         const next: Theme = get().theme === 'dark' ? 'light' : 'dark';
         set({ theme: next });
         applyTheme(next);
+      },
+      setTheme: (t: Theme) => {
+        set({ theme: t });
+        applyTheme(t);
       },
     }),
     {

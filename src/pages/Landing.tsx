@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useThemeStore } from '../store/themeStore';
+import ThemeToggle from '../components/ThemeToggle';
 
 const TITLE = 'THUS SPOKE THE GPU';
 const SUBTITLE = 'The GPU has spoken. Can you understand it?';
@@ -27,9 +29,19 @@ function TypeWriter({ text, delay = 0, speed = 40 }: { text: string; delay?: num
 
 export default function Landing() {
   const navigate = useNavigate();
+  const { setTheme } = useThemeStore();
   const [showSubtitle, setShowSubtitle] = useState(false);
   const [showCTA, setShowCTA] = useState(false);
   const [showButton, setShowButton] = useState(false);
+
+  // Auto-detect theme by time if not previously set by the user
+  useEffect(() => {
+    const persisted = localStorage.getItem('thus-spoke-theme');
+    if (!persisted) {
+      const h = new Date().getHours();
+      setTheme(h >= 7 && h < 20 ? 'light' : 'dark');
+    }
+  }, [setTheme]);
 
   useEffect(() => {
     const t1 = setTimeout(() => setShowSubtitle(true), 2200);
@@ -39,14 +51,22 @@ export default function Landing() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center relative overflow-hidden">
+    <div
+      className="min-h-screen flex flex-col relative overflow-hidden"
+      style={{ background: 'var(--bg)' }}
+    >
+      {/* Theme toggle */}
+      <div className="absolute top-4 right-4 z-20">
+        <ThemeToggle />
+      </div>
+
       {/* Grid background */}
       <div
         className="absolute inset-0 opacity-10"
         style={{
           backgroundImage: `
-            linear-gradient(rgba(245,197,24,0.3) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(245,197,24,0.3) 1px, transparent 1px)
+            linear-gradient(rgba(245,197,24,0.2) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(245,197,24,0.2) 1px, transparent 1px)
           `,
           backgroundSize: '60px 60px',
         }}
@@ -60,7 +80,8 @@ export default function Landing() {
         }}
       />
 
-      <div className="relative z-10 text-center px-8 max-w-4xl">
+      {/* Center content */}
+      <div className="flex-1 flex flex-col items-center justify-center relative z-10 text-center px-8">
         {/* Title — letter by letter */}
         <motion.h1
           className="text-4xl md:text-7xl font-bold tracking-widest mb-8"
@@ -83,7 +104,8 @@ export default function Landing() {
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
           transition={{ delay: 1.5, duration: 0.8 }}
-          className="w-full h-px bg-[#f5c518] opacity-40 mb-8"
+          className="w-full h-px opacity-40 mb-8"
+          style={{ background: '#f5c518' }}
         />
 
         {/* Subtitle */}
@@ -92,7 +114,8 @@ export default function Landing() {
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="text-xl md:text-2xl text-gray-300 mb-6 font-mono"
+              className="text-xl md:text-2xl mb-6 font-mono"
+              style={{ color: 'var(--text)' }}
             >
               <TypeWriter text={SUBTITLE} speed={35} />
             </motion.p>
@@ -105,7 +128,8 @@ export default function Landing() {
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="text-lg text-[#f5c518] opacity-80 mb-12 italic font-mono"
+              className="text-lg opacity-80 mb-12 italic font-mono"
+              style={{ color: 'var(--gpt-code)' }}
             >
               <TypeWriter text={CTA} speed={40} />
             </motion.p>
@@ -127,17 +151,18 @@ export default function Landing() {
             </motion.button>
           )}
         </AnimatePresence>
-
-        {/* Bottom credit */}
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 0.4 }}
-          transition={{ delay: 7 }}
-          className="mt-16 text-xs text-gray-600 font-mono"
-        >
-          8 LEVELS · 1 PHILOSOPHER · 0 SANITY
-        </motion.p>
       </div>
+
+      {/* Bottom tagline — always visible, anchored to bottom */}
+      <motion.p
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 0.7 }}
+        transition={{ delay: 7 }}
+        className="relative z-10 text-center text-xs font-mono pb-6 tracking-widest"
+        style={{ color: 'var(--text)' }}
+      >
+        8 LEVELS · 1 PHILOSOPHER · 0 SANITY
+      </motion.p>
     </div>
   );
 }

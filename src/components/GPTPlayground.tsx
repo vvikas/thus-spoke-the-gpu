@@ -1,13 +1,17 @@
 import { useState, useRef, useCallback } from 'react';
-import { AutoTokenizer, AutoModelForCausalLM, env } from '@huggingface/transformers';
+import { AutoTokenizer, AutoModelForCausalLM, Tensor, env } from '@huggingface/transformers';
 import ThemeToggle from './ThemeToggle';
-import NietzscheSprite from './NietzscheSprite';
-import type { NietzscheExpression } from './NietzscheSprite';
 
 env.allowRemoteModels = true;
+// Disable proxy worker — prevents a persistent Web Worker from polling after inference
+if (env.backends.onnx.wasm) {
+  env.backends.onnx.wasm.proxy = false;
+  env.backends.onnx.wasm.numThreads = 1;
+}
 
 const MODEL_ID = 'Invic7us/nietzsche-gpt';
-const MAX_NEW_CHARS = 200;
+const MAX_NEW_TOKENS = 200;
+const CTX_WINDOW = 50;
 
 type Status = 'idle' | 'loading' | 'ready' | 'error';
 
@@ -19,7 +23,6 @@ export default function GPTPlayground({ onBack }: { onBack: () => void }) {
   const [input, setInput]         = useState('The will to power is');
   const [output, setOutput]       = useState('');
   const [generating, setGenerating] = useState(false);
-  const [expression, setExpression] = useState<NietzscheExpression>('idle');
   const stopRef  = useRef(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const tokRef   = useRef<any>(null);
@@ -44,7 +47,6 @@ export default function GPTPlayground({ onBack }: { onBack: () => void }) {
         progress_callback: progressCb,
       });
       setStatus('ready');
-      setExpression('idle');
     } catch (e) {
       setErrorMsg(e instanceof Error ? e.message : String(e));
       setStatus('error');
@@ -56,81 +58,77 @@ export default function GPTPlayground({ onBack }: { onBack: () => void }) {
     stopRef.current = false;
     setGenerating(true);
     setOutput('');
-    setExpression('speaking');
 
     try {
       let generated = '';
 
-      for (let i = 0; i < MAX_NEW_CHARS; i++) {
+      // Tokenize prompt ONCE — avoids O(n²) re-tokenization on every step
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const encoded: any = (tokRef.current as any)(input, { return_tensors: 'pt' });
+      const allIds: bigint[] = Array.from(encoded.input_ids.data as BigInt64Array);
+      encoded.input_ids?.dispose?.();
+      encoded.attention_mask?.dispose?.();
+
+      for (let i = 0; i < MAX_NEW_TOKENS; i++) {
         if (stopRef.current) break;
 
-        // Re-tokenize full context each step — avoids past_key_values entirely as the ONNX export doesn't have it
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const inputs: any = (tokRef.current as any)(input + generated, { return_tensors: 'pt' });
+        // Slide a context window of CTX_WINDOW tokens — keeps memory flat
+        const ctx = allIds.slice(-CTX_WINDOW);
+        const seqLen = ctx.length;
 
-        // Direct single forward pass (not model.generate)
+        const inputIdsTensor = new Tensor('int64', new BigInt64Array(ctx), [1, seqLen]);
+        const attMask        = new Tensor('int64', new BigInt64Array(seqLen).fill(1n), [1, seqLen]);
+        const posIds         = new Tensor('int64', new BigInt64Array(Array.from({ length: seqLen }, (_, j) => BigInt(j))), [1, seqLen]);
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { logits } = await (modRef.current as any)(inputs);
+        const { logits } = await (modRef.current as any)({ input_ids: inputIdsTensor, attention_mask: attMask, position_ids: posIds });
 
         // logits: [1, seqLen, vocabSize] — pick last token
         const vocabSize: number = logits.dims[2];
-        const seqLen: number    = logits.dims[1];
         const offset = (seqLen - 1) * vocabSize;
 
-        // Softmax and multinomial sampling (matching original python PyTorch code)
-        const logitsArray = new Float32Array(vocabSize);
+        // Softmax + multinomial sampling (temperature=1)
+        const logitsArr = new Float32Array(vocabSize);
         let maxLogit = -Infinity;
         for (let j = 0; j < vocabSize; j++) {
           const v = logits.data[offset + j] as number;
-          logitsArray[j] = v;
-          if (v > maxLogit) maxLogit = v; // Temperature stability
+          logitsArr[j] = v;
+          if (v > maxLogit) maxLogit = v;
         }
-
         let sumExp = 0;
         for (let j = 0; j < vocabSize; j++) {
-          const expVal = Math.exp(logitsArray[j] - maxLogit);
-          logitsArray[j] = expVal;
-          sumExp += expVal;
+          const e = Math.exp(logitsArr[j] - maxLogit);
+          logitsArr[j] = e;
+          sumExp += e;
         }
 
-        let r = Math.random() * sumExp;
-        let cumulative = 0;
+        let rng = Math.random() * sumExp;
         let bestIdx = vocabSize - 1;
         for (let j = 0; j < vocabSize; j++) {
-          cumulative += logitsArray[j];
-          if (r <= cumulative) {
-            bestIdx = j;
-            break;
-          }
+          rng -= logitsArr[j];
+          if (rng <= 0) { bestIdx = j; break; }
         }
 
-        // Break if EOS
-        if (modRef.current?.config?.eos_token_id !== undefined && bestIdx === modRef.current.config.eos_token_id) {
-           break;
-        }
+        allIds.push(BigInt(bestIdx));
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const decoded: string = (tokRef.current as any).decode([bestIdx], { skip_special_tokens: true });
         generated += decoded;
         setOutput(generated);
 
-        // Explicitly free WebAssembly tensor memory to prevent the massive memory leak!
-        if (inputs.input_ids?.dispose) inputs.input_ids.dispose();
-        if (inputs.attention_mask?.dispose) inputs.attention_mask.dispose();
-        if (logits?.dispose) logits.dispose();
+        inputIdsTensor?.dispose?.();
+        attMask?.dispose?.();
+        posIds?.dispose?.();
+        logits?.dispose?.();
 
-        // Yield to React so the UI updates between tokens
+        // Yield to React so UI updates between tokens
         await new Promise(r => setTimeout(r, 0));
       }
     } catch (e) {
       console.error(e);
-      setExpression('wrong');
-      setTimeout(() => setExpression('idle'), 1500);
     }
 
     setGenerating(false);
-    setExpression('right');
-    setTimeout(() => setExpression('idle'), 2000);
   }, [input]);
 
   return (
@@ -150,11 +148,6 @@ export default function GPTPlayground({ onBack }: { onBack: () => void }) {
         <span style={{ color: 'var(--border2)' }}>|</span>
         <span className="text-sm font-bold tracking-widest" style={{ color: '#06d6a0' }}>THUS SPOKE THE GPU</span>
         <div className="ml-auto"><ThemeToggle /></div>
-      </div>
-
-      {/* Nietzsche — fixed to bottom-left, doesn't affect layout */}
-      <div className="fixed bottom-10 left-8 z-10 hidden lg:block">
-        <NietzscheSprite expression={expression} size={120} />
       </div>
 
       {/* Centered content */}
