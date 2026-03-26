@@ -29,6 +29,11 @@ Inspired by [Nandgame](https://nandgame.com/), this is a browser-based puzzle ga
 | 9 | **Transformer Block** | `transformer_block` chip | x + attn(ln(x)) + ffn(ln(·)) |
 | 🧠 | **Live GPT** | — | Run the real Nietzsche model |
 
+### What Awaits in the Final Level
+After building the architecture, you get to have deeply philosophical (and sometimes highly quirky!) conversations with the custom character-level Nietzsche GPT.
+
+![Quirky Nietzsche Generation](public/screenshots/thus_spoke.png)
+
 ---
 
 ## How to Play
