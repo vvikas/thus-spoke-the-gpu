@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useProgressStore } from '../store/progressStore';
+import ThemeToggle from '../components/ThemeToggle';
 
 interface CodeLine {
   code: string;
@@ -157,9 +158,9 @@ export default function GPTSource() {
   const groups = groupLines(CODE);
 
   return (
-    <div className="min-h-screen font-mono" style={{ background: '#0a0a0a', color: '#c9d1d9' }}>
+    <div className="min-h-screen font-mono" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
       {/* Header */}
-      <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-3 border-b border-[#1e1e1e]" style={{ background: '#0d1117' }}>
+      <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-3 border-b" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
         <button
           onClick={() => navigate(-1)}
           className="text-xs tracking-widest hover:text-white transition-colors"
@@ -173,11 +174,11 @@ export default function GPTSource() {
             every highlighted section is a chip you assembled
           </div>
         </div>
-        <div className="w-16" /> {/* spacer */}
+        <ThemeToggle />
       </div>
 
       {/* Chip legend */}
-      <div className="flex flex-wrap gap-2 px-6 py-3 border-b border-[#1e1e1e]" style={{ background: '#0d1117' }}>
+      <div className="flex flex-wrap gap-2 px-6 py-3 border-b" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
         {[
           { label: 'SCALED DOT', color: '#4cc9f0', levelId: 3 },
           { label: 'SOFTMAX', color: '#e07b39', levelId: 2 },
