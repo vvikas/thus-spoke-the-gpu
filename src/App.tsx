@@ -4,7 +4,6 @@ import Hub from './pages/Hub';
 import LevelRouter from './pages/LevelRouter';
 import FinalUnlock from './pages/FinalUnlock';
 import GPTSource from './pages/GPTSource';
-import RealOrAI from './components/RealOrAI';
 import GPTPlayground from './components/GPTPlayground';
 
 function App() {
@@ -16,7 +15,6 @@ function App() {
         <Route path="/level/:id" element={<LevelRouter />} />
         <Route path="/final" element={<FinalUnlock />} />
         <Route path="/gpt-source" element={<GPTSource />} />
-        <Route path="/real-or-ai" element={<RealOrAI />} />
         <Route path="/playground" element={<GPTPlayground onBack={() => window.history.back()} />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

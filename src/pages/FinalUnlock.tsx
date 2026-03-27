@@ -4,11 +4,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import NietzscheSprite from '../components/NietzscheSprite';
 import type { NietzscheExpression } from '../components/NietzscheSprite';
 import { PHILOSOPHIZE_QUOTES } from '../data/quotes';
+import ThemeToggle from '../components/ThemeToggle';
 
 const BLOCK_LABELS = ['ReLU', 'LayerNorm', 'Attention', '+', 'LayerNorm', 'FFN·ReLU', '+', '× 6', '🧠'];
 const BLOCK_COLORS = ['#ff6b6b', '#f5c518', '#f72585', '#e07b39', '#f5c518', '#ef476f', '#e07b39', '#06d6a0', '#3a86ff'];
 
-const SHARE_QUOTE = 'God is not dead. He simply ran out of compute.';
 
 function TypeWriter({ text, speed = 40 }: { text: string; speed?: number }) {
   const [displayed, setDisplayed] = useState('');
@@ -64,10 +64,10 @@ export default function FinalUnlock() {
     setTimeout(() => setExpression('speaking'), 600);
   };
 
-  const shareText = `I just assembled a transformer architecture from scratch — 9 levels of chips, from dot product to transformer block. A pixel-art Nietzsche told me:\n\n"${SHARE_QUOTE}"\n\nThus Spoke the GPU 🧠`;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] font-mono overflow-hidden relative">
+    <div className="min-h-screen font-mono overflow-hidden relative" style={{ background: 'var(--bg)' }}>
+      <div className="absolute top-4 right-4 z-30"><ThemeToggle /></div>
       {/* Assembly Phase */}
       <AnimatePresence>
         {phase === 'assembly' && (
@@ -78,7 +78,7 @@ export default function FinalUnlock() {
             exit={{ opacity: 0 }}
             className="absolute inset-0 flex flex-col items-center justify-center z-10"
           >
-            <p className="text-[#f5c518] text-xl tracking-widest mb-12 glow-gold-text">ASSEMBLING THE BRAIN...</p>
+            <p className="text-xl tracking-widest mb-12 glow-gold-text" style={{ color: 'var(--gpt-code)' }}>ASSEMBLING THE BRAIN...</p>
             <div className="flex flex-wrap gap-3 justify-center max-w-lg">
               {BLOCK_LABELS.map((label, i) => (
                 <motion.div
@@ -127,21 +127,6 @@ export default function FinalUnlock() {
             animate={{ opacity: 1 }}
             className="absolute inset-0 flex flex-col items-center justify-center z-10 px-6"
           >
-            {/* Candle */}
-            <AnimatePresence>
-              {(phase === 'candle' || phase === 'nietzsche' || phase === 'speaking' || phase === 'done') && (
-                <motion.div
-                  key="candle"
-                  initial={{ opacity: 0, scaleY: 0 }}
-                  animate={{ opacity: 1, scaleY: 1 }}
-                  className="absolute bottom-32 left-1/2 -translate-x-1/2 text-4xl flicker"
-                  style={{ transformOrigin: 'bottom center' }}
-                >
-                  🕯
-                </motion.div>
-              )}
-            </AnimatePresence>
-
             {/* Desk scene */}
             <AnimatePresence>
               {(phase === 'nietzsche' || phase === 'speaking' || phase === 'done') && (
@@ -153,7 +138,7 @@ export default function FinalUnlock() {
                   className="flex flex-col items-center"
                 >
                   <NietzscheSprite expression={expression} size={140} />
-                  <div className="w-48 h-3 bg-[#1a1a1a] border border-[#2a2a2a] rounded-sm -mt-2" />
+                  <div className="w-48 h-3 rounded-sm -mt-2" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }} />
                 </motion.div>
               )}
             </AnimatePresence>
@@ -166,13 +151,13 @@ export default function FinalUnlock() {
                   initial={{ opacity: 0, scale: 0.8, y: 20 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   transition={{ delay: 0.3, type: 'spring' }}
-                  className="mt-6 max-w-lg p-6 border-2 border-[#f5c518] bg-[#111] text-center"
-                  style={{ boxShadow: '0 0 40px rgba(245,197,24,0.2)' }}
+                  className="mt-6 max-w-lg p-6 border-2 border-[#f5c518] text-center"
+                  style={{ background: 'var(--surface)', boxShadow: '0 0 40px rgba(245,197,24,0.2)' }}
                 >
                   <p className="text-[#f5c518] text-xl italic leading-relaxed">
                     <TypeWriter key={currentQuote} text={`"${currentQuote}"`} speed={35} />
                   </p>
-                  <p className="text-gray-700 text-xs mt-3">— Thus Spoke the GPU</p>
+                  <p className="text-xs mt-3" style={{ color: 'var(--dim)' }}>— Thus Spoke the GPU</p>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -201,29 +186,20 @@ export default function FinalUnlock() {
                     PHILOSOPHIZE AGAIN
                   </button>
                   <button
-                    onClick={() => navigate('/real-or-ai')}
-                    className="px-5 py-3 border border-[#f72585] text-[#f72585] hover:bg-[#f72585] hover:text-black transition-colors text-sm tracking-widest"
-                  >
-                    REAL OR AI?
-                  </button>
-                  <a
-                    href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="px-5 py-3 border border-[#4cc9f0] text-[#4cc9f0] hover:bg-[#4cc9f0] hover:text-black transition-colors text-sm tracking-widest"
-                  >
-                    SHARE WISDOM
-                  </a>
-                  <button
                     onClick={() => navigate('/gpt-source')}
-                    className="px-5 py-3 border-2 border-[#f5c518] text-[#f5c518] hover:bg-[#f5c518] hover:text-black transition-colors text-sm tracking-widest font-bold"
-                    style={{ boxShadow: '0 0 20px rgba(245,197,24,0.2)' }}
+                    className="px-5 py-3 border-2 font-bold transition-colors text-sm tracking-widest hover:text-black"
+                    style={{ borderColor: 'var(--gpt-code)', color: 'var(--gpt-code)' }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--gpt-code)'; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
                   >
                     SEE IT IN GPT.PY →
                   </button>
                   <button
                     onClick={() => navigate('/hub')}
-                    className="px-5 py-3 border border-gray-700 text-gray-500 hover:border-gray-500 hover:text-gray-300 transition-colors text-sm tracking-widest"
+                    className="px-5 py-3 border transition-colors text-sm tracking-widest"
+                    style={{ borderColor: 'var(--border2)', color: 'var(--muted)' }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--text)'; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--muted)'; }}
                   >
                     ← BACK TO HUB
                   </button>
@@ -237,7 +213,8 @@ export default function FinalUnlock() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 0.5 }}
                 transition={{ delay: 1 }}
-                className="absolute top-8 text-center text-xs tracking-widest text-[#f5c518]"
+                className="absolute top-8 text-center text-xs tracking-widest"
+                style={{ color: 'var(--gpt-code)' }}
               >
                 ★ THE BRAIN IS COMPLETE ★
               </motion.p>
