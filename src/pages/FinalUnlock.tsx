@@ -187,10 +187,10 @@ export default function FinalUnlock() {
                   </button>
                   <button
                     onClick={() => navigate('/gpt-source')}
-                    className="px-5 py-3 border-2 font-bold transition-colors text-sm tracking-widest hover:text-black"
+                    className="px-5 py-3 border-2 font-bold transition-colors text-sm tracking-widest"
                     style={{ borderColor: 'var(--gpt-code)', color: 'var(--gpt-code)' }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--gpt-code)'; }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
+                    onMouseEnter={e => { const b = e.currentTarget as HTMLButtonElement; b.style.background = 'var(--gpt-code)'; b.style.color = '#000'; }}
+                    onMouseLeave={e => { const b = e.currentTarget as HTMLButtonElement; b.style.background = 'transparent'; b.style.color = 'var(--gpt-code)'; }}
                   >
                     SEE IT IN GPT.PY →
                   </button>
