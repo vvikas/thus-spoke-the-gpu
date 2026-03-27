@@ -112,7 +112,7 @@ export default function Hub() {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: LEVEL_DEFS.length * 0.06 }}
-            onClick={() => allLevelsComplete && navigate('/playground')}
+            onClick={() => allLevelsComplete && navigate('/final')}
             className="flex items-center gap-5 rounded-lg px-5 py-4 transition-all duration-200 border mt-2"
             style={{
               borderColor: allLevelsComplete ? '#06d6a0' : 'var(--border)',
@@ -141,8 +141,21 @@ export default function Hub() {
           </motion.div>
         </div>
 
+        {/* GPT source viewer */}
+        <div className="mt-6 text-center">
+          <button
+            onClick={() => navigate('/gpt-source')}
+            className="text-xs tracking-widest transition-colors"
+            style={{ color: 'var(--muted)' }}
+            onMouseEnter={e => (e.currentTarget.style.color = '#f5c518')}
+            onMouseLeave={e => (e.currentTarget.style.color = 'var(--muted)')}
+          >
+            VIEW ANNOTATED GPT.PY →
+          </button>
+        </div>
+
         {/* Reset */}
-        <div className="mt-10 text-center">
+        <div className="mt-4 text-center">
           <button
             onClick={() => { if (window.confirm('Reset all progress?')) resetProgress(); }}
             className="text-xs tracking-widest transition-colors"

@@ -215,6 +215,13 @@ export default function FinalUnlock() {
                     SHARE WISDOM
                   </a>
                   <button
+                    onClick={() => navigate('/gpt-source')}
+                    className="px-5 py-3 border-2 border-[#f5c518] text-[#f5c518] hover:bg-[#f5c518] hover:text-black transition-colors text-sm tracking-widest font-bold"
+                    style={{ boxShadow: '0 0 20px rgba(245,197,24,0.2)' }}
+                  >
+                    SEE IT IN GPT.PY →
+                  </button>
+                  <button
                     onClick={() => navigate('/hub')}
                     className="px-5 py-3 border border-gray-700 text-gray-500 hover:border-gray-500 hover:text-gray-300 transition-colors text-sm tracking-widest"
                   >

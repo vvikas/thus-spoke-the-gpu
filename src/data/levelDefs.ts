@@ -12,10 +12,11 @@ export const LEVEL_DEFS: LevelDef[] = [
     color: '#f5c518',
     producesChip: 'dot_product',
     description:
+      'Every transformer starts here. When a query asks "which tokens should I attend to?", ' +
+      'it scores each key with a dot product — one number that says how similar two vectors are. ' +
+      'Higher score = more attention. ' +
       '(1) Add MULTIPLY → connect a and b → element-wise products. ' +
-      '(2) Add SUM → connect MULTIPLY output → sums all products into one scalar. ' +
-      'That single number measures how similar two vectors are — ' +
-      'the atomic operation inside every attention score.',
+      '(2) Add SUM → connect MULTIPLY output → sums all products into one scalar.',
     math: 'a · b = Σ (aᵢ × bᵢ)',
     gptCode:
 `class Head(nn.Module):
@@ -47,10 +48,12 @@ export const LEVEL_DEFS: LevelDef[] = [
     color: '#e07b39',
     producesChip: 'softmax_vec',
     description:
-      '(1) Add EXP → connect x → apply eˣ to each element. ' +
-      '(2) Add SUM → connect EXP output → total of all exponentials. ' +
-      '(3) Add DIVIDE → connect EXP output to vec, SUM output to by → normalize. ' +
-      'Larger scores dominate; the result always sums to 1.',
+      'Raw attention scores are just numbers — they could be anything. ' +
+      'Softmax converts them into probabilities that sum to 1, so the model can decide ' +
+      '"spend 70% of attention here, 30% there." Without it, attention has no meaning. ' +
+      '(1) Add EXP → connect x → eˣ per element. ' +
+      '(2) Add SUM → connect EXP output → total. ' +
+      '(3) Add DIVIDE → connect EXP output to vec, SUM to by → normalize.',
     math: 'softmax(xᵢ) = eˣⁱ / Σ eˣʲ',
     gptCode:
 `class Head(nn.Module):
@@ -80,10 +83,12 @@ export const LEVEL_DEFS: LevelDef[] = [
     color: '#4cc9f0',
     producesChip: 'scaled_dot',
     description:
-      '(1) Add DOT PRODUCT chip → connect q and k → get raw score. ' +
-      '(2) Add SQRT → connect d input → get √d. ' +
-      '(3) Add DIVIDE → connect raw score to vec, √d to by → scaled output. ' +
-      'Without scaling, large dot products push softmax into near-zero gradients.',
+      'As vectors get longer, dot products grow larger — softmax then collapses to a one-hot spike ' +
+      'and gradients vanish. GPT divides every score by √d to keep values in a stable range. ' +
+      'This single division is what makes training on long sequences possible. ' +
+      '(1) Add DOT PRODUCT chip → connect q and k → raw score. ' +
+      '(2) Add SQRT → connect d input → √d. ' +
+      '(3) Add DIVIDE → raw score to vec, √d to by → scaled output.',
     math: 'score = (q · k) / √d',
     gptCode:
 `class Head(nn.Module):
@@ -115,10 +120,13 @@ export const LEVEL_DEFS: LevelDef[] = [
     color: '#f72585',
     producesChip: 'attn_weights',
     description:
+      'This is the "where to look" chip. The model has a query (what it\'s looking for) and two keys ' +
+      '(candidate tokens). Scoring each key against the query — then softmax-ing — gives weights: ' +
+      'how much attention to pay to each token. Every attention head in GPT does exactly this. ' +
       '(1) Add SCALED DOT chip → connect q + k0 → score s0. ' +
       '(2) Add another SCALED DOT chip → connect q + k1 → score s1. ' +
-      '(3) Add PACK → connect s0 and s1 → [s0, s1] vector. ' +
-      '(4) Add SOFTMAX chip → connect [s0, s1] → attention weights [w0, w1].',
+      '(3) Add PACK → connect s0 and s1 → [s0, s1]. ' +
+      '(4) Add SOFTMAX chip → connect [s0, s1] → weights [w0, w1].',
     math: 'w = softmax([q·k₀/√d, q·k₁/√d])',
     gptCode:
 `class Head(nn.Module):
@@ -154,13 +162,17 @@ export const LEVEL_DEFS: LevelDef[] = [
     color: '#7209b7',
     producesChip: 'attn_head',
     description:
-      '(1) Add ATTN WEIGHTS chip → connect q, k0, k1 → outputs [w0, w1]. ' +
-      '(2) Add VEC[0] → wire from ATTN WEIGHTS output → extract scalar w0. ' +
-      '(3) Add VEC[1] → wire from the same ATTN WEIGHTS output → extract scalar w1. ' +
-      '(4) Add SCALE VEC → connect w0 + v0 → w0·v0. ' +
-      '(5) Add another SCALE VEC → connect w1 + v1 → w1·v1. ' +
-      '(6) Add ADD → connect both scaled vectors → final output. ' +
-      'Tip: one node output can fan-out to multiple inputs.',
+      'Knowing where to look is only half — now the model must actually retrieve information. ' +
+      'Values are the content vectors. The attention head blends them by weight: ' +
+      'if token A got 80% attention, its value contributes 80% to the output. ' +
+      'This weighted sum is what flows into the rest of the transformer. ' +
+      '(1) Add ATTN WEIGHTS chip → connect q, k0, k1 → [w0, w1]. ' +
+      '(2) Add VEC[0] → wire from ATTN WEIGHTS → w0. ' +
+      '(3) Add VEC[1] → wire from ATTN WEIGHTS → w1. ' +
+      '(4) Add SCALE VEC → w0 + v0 → w0·v0. ' +
+      '(5) Add SCALE VEC → w1 + v1 → w1·v1. ' +
+      '(6) Add ADD → both scaled vectors → output. ' +
+      'Tip: one output can connect to multiple inputs.',
     math: 'out = w₀·v₀ + w₁·v₁',
     gptCode:
 `class Head(nn.Module):
@@ -196,10 +208,13 @@ export const LEVEL_DEFS: LevelDef[] = [
     color: '#ff6b6b',
     producesChip: 'relu',
     description:
-      '(1) Notice the zeros input already on the canvas — same length as x. ' +
+      'After the linear layer in the feed-forward block, the model needs non-linearity — ' +
+      'without it, stacking layers does nothing a single layer couldn\'t do. ' +
+      'ReLU is the simplest non-linearity: pass positives through, kill negatives. ' +
+      'It\'s what gives the FFN block its expressive power. ' +
+      '(1) Notice the zeros input already on canvas — same length as x. ' +
       '(2) Add MAX → connect x to port a, zeros to port b. ' +
-      '(3) Wire MAX output → final output. ' +
-      'ReLU = max(x, 0): every negative element becomes 0, positives pass through unchanged.',
+      '(3) Wire MAX output → final output.',
     math: 'ReLU(x) = max(x, 0)',
     gptCode:
 `class FeedFoward(nn.Module):
@@ -232,10 +247,12 @@ export const LEVEL_DEFS: LevelDef[] = [
     color: '#ef476f',
     producesChip: 'ffn_relu',
     description:
-      '(1) Add MULTIPLY → connect x and W → element-wise W⊙x. ' +
+      'Attention decides what to look at; the feed-forward block decides what to think about it. ' +
+      'Every token position runs this independently: a linear transform (W⊙x + b) followed by ReLU. ' +
+      'In GPT this is where most of the model\'s "knowledge" is stored — the FFN is 4× wider than the embedding. ' +
+      '(1) Add MULTIPLY → connect x and W → W⊙x. ' +
       '(2) Add ADD → connect W⊙x and b → W⊙x + b. ' +
-      '(3) Add ReLU chip → connect W⊙x + b → zeros out negatives → final output. ' +
-      'This layer runs independently at each position after attention.',
+      '(3) Add ReLU chip → connect W⊙x + b → final output.',
     math: 'out = ReLU(W ⊙ x + b)',
     gptCode:
 `class FeedFoward(nn.Module):
@@ -269,12 +286,16 @@ export const LEVEL_DEFS: LevelDef[] = [
     color: '#3a86ff',
     producesChip: 'layer_norm',
     description:
-      '(1) Add MEAN → connect x → get scalar μ. ' +
-      '(2) Add SUBTRACT → connect x and μ → centered vector (x−μ). ' +
-      '(3) Add MULTIPLY → connect SUBTRACT output to both ports a and b → (x−μ)². ' +
-      '(4) Add MEAN → connect squared values → variance σ². ' +
-      '(5) Add SQRT → connect variance → get σ. ' +
-      '(6) Add DIVIDE → connect centered (x−μ) to vec, σ to by → normalized output.',
+      'As activations flow through many layers they shift and grow — gradients explode or vanish. ' +
+      'Layer norm re-centers every vector to mean=0, std=1 before each sub-layer. ' +
+      'GPT applies it twice per block: once before attention, once before FFN. ' +
+      'It\'s what makes training deep transformers stable. ' +
+      '(1) Add MEAN → connect x → μ. ' +
+      '(2) Add SUBTRACT → connect x and μ → (x−μ). ' +
+      '(3) Add MULTIPLY → connect SUBTRACT output to both ports → (x−μ)². ' +
+      '(4) Add MEAN → connect squared values → σ². ' +
+      '(5) Add SQRT → connect σ² → σ. ' +
+      '(6) Add DIVIDE → (x−μ) to vec, σ to by → normalized output.',
     math: 'out = (x − mean(x)) / std(x)',
     gptCode:
 `# Applied once before attention, once before FFN:
@@ -302,13 +323,16 @@ x = nn.LayerNorm(n_embd)(x)
     color: '#06d6a0',
     producesChip: 'transformer_block',
     description:
+      'This is the full repeating unit of GPT — stack 6 of these and you have GPT-2 small. ' +
+      'The residual connections (x + ...) are critical: they give gradients a direct highway back ' +
+      'through the network, making it possible to train dozens of layers deep. ' +
+      'You are wiring the exact structure from gpt.py\'s Block.forward(). ' +
       '(1) Add LAYER NORM chip → connect x → ln1. ' +
       '(2) Add ATTN HEAD chip → connect ln1, k0, k1, v0, v1 → attn_out. ' +
-      '(3) Add ADD → connect x + attn_out → res1 (first residual). ' +
+      '(3) Add ADD → x + attn_out → res1 (first residual). ' +
       '(4) Add LAYER NORM chip → connect res1 → ln2. ' +
       '(5) Add FFN chip → connect ln2, W, b → ffn_out. ' +
-      '(6) Add ADD → connect res1 + ffn_out → final output (second residual). ' +
-      'Residual connections let gradients flow freely during training.',
+      '(6) Add ADD → res1 + ffn_out → final output (second residual).',
     math: 'x = x + attn(ln(x));  x = x + ffn(ln(x))',
     gptCode:
 `class Block(nn.Module):
