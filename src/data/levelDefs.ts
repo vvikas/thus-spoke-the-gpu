@@ -326,14 +326,16 @@ x = nn.LayerNorm(n_embd)(x)
     color: '#06d6a0',
     producesChip: 'transformer_block',
     description:
-      'This is the full repeating unit of GPT — stack 6 of these and you have GPT-2 small. ' +
-      'The residual connections (x + ...) are critical: they give gradients a direct highway back ' +
-      'through the network, making it possible to train dozens of layers deep. ' +
-      'You are wiring the exact structure from gpt.py\'s Block.forward(). ' +
-      '(1) Add LAYER NORM chip → connect x → ln1. ' +
+      'INPUT: x — a token\'s embedding vector (carries everything the model knows about that position so far). ' +
+      'k0, k1 — key vectors of the two other tokens x is allowed to attend to. ' +
+      'v0, v1 — their value vectors (the information they offer). W, b — FFN weights and bias. ' +
+      'OUTPUT: a new vector for x, updated with context from other tokens and passed through the thinking layer. ' +
+      'Stack 6 of these blocks and you have GPT-2 small. ' +
+      'The residual (x + ...) on each sub-layer lets gradients flow straight back — without it deep networks fail to train. ' +
+      '(1) Add LAYER NORM chip → connect x → ln1 (stabilise before attention). ' +
       '(2) Add ATTN HEAD chip → connect ln1, k0, k1, v0, v1 → attn_out. ' +
-      '(3) Add ADD → x + attn_out → res1 (first residual). ' +
-      '(4) Add LAYER NORM chip → connect res1 → ln2. ' +
+      '(3) Add ADD → x + attn_out → res1 (first residual: x remembers itself). ' +
+      '(4) Add LAYER NORM chip → connect res1 → ln2 (stabilise before FFN). ' +
       '(5) Add FFN chip → connect ln2, W, b → ffn_out. ' +
       '(6) Add ADD → res1 + ffn_out → final output (second residual).',
     math: 'x = x + attn(ln(x));  x = x + ffn(ln(x))',
