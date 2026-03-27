@@ -170,7 +170,7 @@ export default function GPTSource() {
         </button>
         <div className="text-center">
           <div className="text-xs tracking-[0.3em]" style={{ color: '#f5c518' }}>gpt.py · annotated</div>
-          <div className="text-[10px] mt-0.5" style={{ color: '#484f58' }}>
+          <div className="text-[10px] mt-0.5" style={{ color: 'var(--dim)' }}>
             every highlighted section is a chip you assembled
           </div>
         </div>
@@ -194,12 +194,12 @@ export default function GPTSource() {
               key={label}
               className="flex items-center gap-1.5 px-2 py-1 rounded text-[10px] tracking-wider border"
               style={{
-                borderColor: done ? color + '55' : '#2d2d2d',
-                color: done ? color : '#484f58',
+                borderColor: done ? color + '55' : 'var(--border)',
+                color: done ? color : 'var(--dim)',
                 background: done ? color + '11' : 'transparent',
               }}
             >
-              <span style={{ width: 6, height: 6, borderRadius: 2, background: done ? color : '#2d2d2d', display: 'inline-block' }} />
+              <span style={{ width: 6, height: 6, borderRadius: 2, background: done ? color : 'var(--border2)', display: 'inline-block' }} />
               {label}
               {!done && <span className="ml-1 opacity-50">L{levelId}</span>}
             </div>
@@ -215,7 +215,7 @@ export default function GPTSource() {
               return (
                 <div key={gi}>
                   {group.lines.map((line, li) => (
-                    <div key={li} className="whitespace-pre" style={{ color: line.code.startsWith('#') ? '#484f58' : '#c9d1d9' }}>
+                    <div key={li} className="whitespace-pre" style={{ color: line.code.startsWith('#') ? 'var(--dim)' : 'var(--text)' }}>
                       {line.code || '\u00a0'}
                     </div>
                   ))}
@@ -231,14 +231,14 @@ export default function GPTSource() {
                 key={gi}
                 className="relative my-0.5 rounded-r"
                 style={{
-                  borderLeft: `3px solid ${done ? color : '#2d2d2d'}`,
+                  borderLeft: `3px solid ${done ? color : 'var(--border)'}`,
                   background: done ? color + '0d' : 'transparent',
                   paddingLeft: 12,
                   paddingRight: 120,
                 }}
               >
                 {group.lines.map((line, li) => (
-                  <div key={li} className="whitespace-pre" style={{ color: done ? '#e6edf3' : '#4a4a4a' }}>
+                  <div key={li} className="whitespace-pre" style={{ color: done ? 'var(--text)' : 'var(--dim)' }}>
                     {line.code || '\u00a0'}
                   </div>
                 ))}
@@ -246,9 +246,9 @@ export default function GPTSource() {
                 <div
                   className="absolute right-2 top-1 text-[10px] px-2 py-0.5 rounded tracking-wider font-bold"
                   style={{
-                    background: done ? color + '22' : '#1a1a1a',
-                    color: done ? color : '#333',
-                    border: `1px solid ${done ? color + '44' : '#2a2a2a'}`,
+                    background: done ? color + '22' : 'var(--surface)',
+                    color: done ? color : 'var(--dim)',
+                    border: `1px solid ${done ? color + '44' : 'var(--border)'}`,
                     whiteSpace: 'nowrap',
                   }}
                 >
