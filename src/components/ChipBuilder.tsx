@@ -331,45 +331,57 @@ export default function ChipBuilder({ levelId }: { levelId: number }) {
   );
 }
 
-// ── Description renderer — prose or numbered steps ────────────────────────────
+// ── Description renderer — prose + numbered steps ─────────────────────────────
 function DescriptionBody({ text, color }: { text: string; color: string }) {
-  // Split on (1) (2) ... pattern — if found, render as step list
   const parts = text.split(/(\(\d+\))/);
-  const hasSteps = parts.length > 1 && parts.some(p => /^\(\d+\)$/.test(p));
+  const hasSteps = parts.some(p => /^\(\d+\)$/.test(p));
 
-  if (!hasSteps) {
-    return <p className="text-sm leading-6" style={{ color: 'var(--text2)' }}>{text}</p>;
-  }
-
-  // Pair each "(N)" marker with the text that follows it
+  // Collect preamble sentences and numbered steps
   const steps: { n: string; body: string }[] = [];
   let preamble = '';
   for (let i = 0; i < parts.length; i++) {
     if (/^\(\d+\)$/.test(parts[i])) {
       steps.push({ n: parts[i].slice(1, -1), body: (parts[i + 1] ?? '').trim() });
-      i++; // skip the body we just consumed
+      i++;
     } else if (steps.length === 0) {
       preamble += parts[i];
     }
   }
 
+  // Split preamble into individual sentences for readability
+  const sentences = preamble.trim()
+    ? preamble.trim().split(/(?<=[.!?])\s+(?=[A-Z"'])/).filter(Boolean)
+    : [];
+
   return (
-    <div className="flex flex-col gap-1">
-      {preamble.trim() && (
-        <p className="text-sm leading-6 mb-1" style={{ color: 'var(--text2)' }}>{preamble.trim()}</p>
-      )}
-      {steps.map(({ n, body }) => (
-        <div key={n} className="flex items-start gap-3 py-2 px-3 rounded-lg"
-          style={{ background: 'var(--surface2)', border: '1px solid var(--border)' }}>
-          <span
-            className="shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold mt-0.5"
-            style={{ background: color, color: '#000', minWidth: '1.25rem' }}
-          >
-            {n}
-          </span>
-          <span className="text-sm leading-5" style={{ color: 'var(--text2)' }}>{body}</span>
+    <div className="flex flex-col gap-3">
+      {/* Motivation sentences — each on its own line */}
+      {sentences.length > 0 && (
+        <div className="flex flex-col gap-2">
+          {sentences.map((s, i) => (
+            <p key={i} className="text-sm leading-6" style={{ color: 'var(--text2)' }}>{s}</p>
+          ))}
         </div>
-      ))}
+      )}
+
+      {/* Wiring steps */}
+      {hasSteps && (
+        <div className="flex flex-col gap-2">
+          <div className="text-xs tracking-widest font-bold" style={{ color: 'var(--dim)' }}>WIRING</div>
+          {steps.map(({ n, body }) => (
+            <div key={n} className="flex items-start gap-3 py-2.5 px-3 rounded-lg"
+              style={{ background: 'var(--surface2)', border: '1px solid var(--border)' }}>
+              <span
+                className="shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold mt-0.5"
+                style={{ background: color, color: '#000', minWidth: '1.25rem' }}
+              >
+                {n}
+              </span>
+              <span className="text-sm leading-5" style={{ color: 'var(--text)' }}>{body}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

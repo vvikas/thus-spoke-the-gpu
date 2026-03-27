@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-export function useSidebarResize(defaultWidth = 420) {
+export function useSidebarResize(defaultWidth = Math.round(window.innerWidth * 0.25)) {
   const [width, setWidth] = useState(defaultWidth);
   const dragging = useRef(false);
   const startX = useRef(0);
