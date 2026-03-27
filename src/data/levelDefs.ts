@@ -120,9 +120,11 @@ export const LEVEL_DEFS: LevelDef[] = [
     color: '#f72585',
     producesChip: 'attn_weights',
     description:
-      'This is the "where to look" chip. The model has a query (what it\'s looking for) and two keys ' +
-      '(candidate tokens). Scoring each key against the query — then softmax-ing — gives weights: ' +
-      'how much attention to pay to each token. Every attention head in GPT does exactly this. ' +
+      'Think of it like a search engine inside the model. ' +
+      'Q (query) = "what am I looking for?". K (key) = "what does each token advertise about itself?". ' +
+      'Dot product of Q with each K scores how relevant that token is. ' +
+      'Softmax turns those scores into weights that sum to 1 — a probability distribution over tokens. ' +
+      'No values yet; this chip only decides WHERE to look. ' +
       '(1) Add SCALED DOT chip → connect q + k0 → score s0. ' +
       '(2) Add another SCALED DOT chip → connect q + k1 → score s1. ' +
       '(3) Add PACK → connect s0 and s1 → [s0, s1]. ' +
@@ -162,16 +164,17 @@ export const LEVEL_DEFS: LevelDef[] = [
     color: '#7209b7',
     producesChip: 'attn_head',
     description:
-      'Knowing where to look is only half — now the model must actually retrieve information. ' +
-      'Values are the content vectors. The attention head blends them by weight: ' +
-      'if token A got 80% attention, its value contributes 80% to the output. ' +
-      'This weighted sum is what flows into the rest of the transformer. ' +
+      'V (value) = "what information do I actually carry?". ' +
+      'The weights from the previous level say how much of each token\'s value to include. ' +
+      'Each token has its own V vector; the head blends them in proportion to the attention weights. ' +
+      'Result: a single vector that mixes information from all tokens, weighted by relevance. ' +
+      'Q/K decided where to look; V is what gets returned. ' +
       '(1) Add ATTN WEIGHTS chip → connect q, k0, k1 → [w0, w1]. ' +
-      '(2) Add VEC[0] → wire from ATTN WEIGHTS → w0. ' +
-      '(3) Add VEC[1] → wire from ATTN WEIGHTS → w1. ' +
+      '(2) Add VEC[0] → wire from ATTN WEIGHTS → extract w0. ' +
+      '(3) Add VEC[1] → wire from ATTN WEIGHTS → extract w1. ' +
       '(4) Add SCALE VEC → w0 + v0 → w0·v0. ' +
       '(5) Add SCALE VEC → w1 + v1 → w1·v1. ' +
-      '(6) Add ADD → both scaled vectors → output. ' +
+      '(6) Add ADD → both scaled vectors → final output. ' +
       'Tip: one output can connect to multiple inputs.',
     math: 'out = w₀·v₀ + w₁·v₁',
     gptCode:
